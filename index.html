@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRM MaxiClientes - Óptica</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- FullCalendar CSS -->
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    
+    <!-- Loader -->
+    <div id="loader" class="loader-overlay hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+        <div class="logo-container">
+            <i class="fa-solid fa-glasses logo-icon"></i>
+            <h2>ÓpticaCRM</h2>
+        </div>
+        
+        <ul class="nav-links">
+            <li class="active" data-target="module-forms">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Nuevo Registro</span>
+            </li>
+            <li data-target="module-clients">
+                <i class="fa-solid fa-users"></i>
+                <span>Clientes</span>
+            </li>
+            <li data-target="module-appointments">
+                <i class="fa-regular fa-calendar-check"></i>
+                <span>Gestión de Citas</span>
+            </li>
+            <li data-target="module-commercial">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Gestión Comercial</span>
+            </li>
+            <li data-target="module-dashboard">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </li>
+        </ul>
+
+        <div class="bottom-actions">
+            <div class="data-status">
+                <p>Base de datos:</p>
+                <span id="db-status-badge" class="badge badge-warning">No cargada</span>
+            </div>
+            <button id="btn-load-data" class="btn btn-secondary">
+                <i class="fa-solid fa-upload"></i> Cargar Excel
+            </button>
+            <input type="file" id="file-upload" accept=".xlsx, .xls" style="display: none;">
+            
+            <button id="btn-export-data" class="btn btn-primary" disabled>
+                <i class="fa-solid fa-download"></i> Guardar/Exportar
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="top-header">
+            <h1 id="page-title">Nuevo Registro (Consulta)</h1>
+            <div class="user-profile">
+                <i class="fa-solid fa-circle-user"></i>
+                <span>Administrador</span>
+            </div>
+        </header>
+
+        <!-- Modules Container -->
+        <div class="modules-container">
+            
+            <!-- Module 1: Formularios -->
+            <section id="module-forms" class="module active">
+                <!-- Formulario Consulta -->
+                <div id="form-consulta" class="glass-card form-container">
+                    <h2>Consulta de Paciente</h2>
+                    <p class="subtitle">Ingrese los datos para verificar si el paciente existe en la base de datos.</p>
+                    
+                    <form id="consulta-form">
+                        <div class="form-group">
+                            <label for="c_tipo_doc">Tipo de Documento *</label>
+                            <select id="c_tipo_doc" required>
+                                <option value="">Seleccione...</option>
+                                <option value="CC">Cédula de Ciudadanía</option>
+                                <option value="TI">Tarjeta de Identidad</option>
+                                <option value="CE">Cédula de Extranjería</option>
+                                <option value="PA">Pasaporte</option>
+                                <option value="RC">Registro Civil</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="c_num_doc">Número de Documento *</label>
+                            <input type="text" id="c_num_doc" required placeholder="Ej: 1234567890">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary btn-large">Consultar Paciente</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Formulario MaxiClientes Parte 1: Datos Personales -->
+                <div id="form-maxi-pt1" class="glass-card form-container hidden">
+                    <div class="form-header">
+                        <h2>Formulario MaxiClientes</h2>
+                        <span class="step-indicator">Parte 1 de 2: Datos Personales</span>
+                    </div>
+                    
+                    <form id="maxi-pt1-form">
+                        <div class="form-grid">
+                            <!-- Basic Data -->
+                            <div class="form-group">
+                                <label>Tipo de Documento *</label>
+                                <select id="m1_tipo_doc" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>Número de Documento *</label>
+                                <input type="text" id="m1_num_doc" required readonly class="readonly">
+                            </div>
+                            <div class="form-group">
+                                <label>Nombres *</label>
+                                <input type="text" id="m1_nombres" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Apellidos *</label>
+                                <input type="text" id="m1_apellidos" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Celular *</label>
+                                <input type="tel" id="m1_celular" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Correo Electrónico *</label>
+                                <input type="email" id="m1_correo" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Nacimiento *</label>
+                                <input type="date" id="m1_fecha_nac" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Género *</label>
+                                <select id="m1_genero" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Masculino">Masculino</option>
+                                    <option value="Femenino">Femenino</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Location and Demographics -->
+                            <div class="form-group">
+                                <label>Ocupación *</label>
+                                <input type="text" id="m1_ocupacion" required>
+                            </div>
+                            <div class="form-group">
+                                <label>País de Residencia *</label>
+                                <input type="text" id="m1_pais" required value="Colombia">
+                            </div>
+                            <div class="form-group">
+                                <label>Ciudad y Municipio *</label>
+                                <input type="text" id="m1_ciudad" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Dirección *</label>
+                                <input type="text" id="m1_direccion" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Zona Geográfica *</label>
+                                <select id="m1_zona" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Urbana">Urbana</option>
+                                    <option value="Rural">Rural</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado Civil *</label>
+                                <select id="m1_estado_civil" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Soltero(a)">Soltero(a)</option>
+                                    <option value="Casado(a)">Casado(a)</option>
+                                    <option value="Unión Libre">Unión Libre</option>
+                                    <option value="Divorciado(a)">Divorciado(a)</option>
+                                    <option value="Viudo(a)">Viudo(a)</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Health & Origin -->
+                            <div class="form-group">
+                                <label>EPS *</label>
+                                <input type="text" id="m1_eps" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Tipo de Régimen *</label>
+                                <select id="m1_regimen" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Contributivo">Contributivo</option>
+                                    <option value="Subsidiado">Subsidiado</option>
+                                    <option value="Especial">Especial</option>
+                                    <option value="Particular">Particular</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Medio de Contacto Inicial *</label>
+                                <select id="m1_contacto" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Usuario actual">Usuario actual</option>
+                                    <option value="Referido">Referido</option>
+                                    <option value="Pasó por la óptica">Pasó por la óptica</option>
+                                    <option value="Instagram">Instagram</option>
+                                    <option value="Facebook">Facebook</option>
+                                    <option value="Tiktok">Tiktok</option>
+                                    <option value="Convenio">Convenio</option>
+                                </select>
+                            </div>
+                            
+                            <!-- Referido Info (Hidden by default) -->
+                            <div id="referido-container" class="form-group full-width hidden conditional-group">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Documento de quien refiere *</label>
+                                        <input type="text" id="m1_ref_doc">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Parentesco *</label>
+                                        <input type="text" id="m1_ref_parentesco">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group full-width">
+                                <label>Condiciones Visuales Iniciales (Máx 4) *</label>
+                                <div class="checkbox-grid" id="m1_condiciones">
+                                    <!-- Populated by JS -->
+                                </div>
+                                <span class="error-msg" id="condiciones-error">Seleccione entre 1 y 4 opciones.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions space-between">
+                            <button type="button" class="btn btn-outline" id="btn-cancel-pt1">Cancelar</button>
+                            <button type="submit" class="btn btn-primary">Siguiente: Agendamiento <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Formulario MaxiClientes Parte 2: Cita -->
+                <div id="form-maxi-pt2" class="glass-card form-container hidden">
+                    <div class="form-header">
+                        <h2>Formulario MaxiClientes</h2>
+                        <span class="step-indicator">Parte 2 de 2: Agendamiento y Consulta</span>
+                    </div>
+                    
+                    <form id="maxi-pt2-form">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Fecha de Consulta *</label>
+                                <input type="date" id="m2_fecha" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Hora de Consulta *</label>
+                                <input type="time" id="m2_hora" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Profesional *</label>
+                                <select id="m2_profesional" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Jose Daniel Iglesias">Jose Daniel Iglesias</option>
+                                    <option value="Profesional externo">Profesional externo</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Motivo de Visita *</label>
+                                <select id="m2_motivo" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Control anual">Control anual</option>
+                                    <option value="Novedad">Novedad</option>
+                                    <option value="Reposición solución visual">Reposición solución visual</option>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Condiciones Visuales Actuales *</label>
+                                <div class="checkbox-grid" id="m2_condiciones_actuales">
+                                    <!-- Populated by JS -->
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label>Tipo de Cita *</label>
+                                <select id="m2_tipo_cita" required>
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Estado de la Cita *</label>
+                                <select id="m2_estado_cita" required>
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="Confirmada">Confirmada</option>
+                                    <option value="Reprogramada">Reprogramada</option>
+                                    <option value="Asistida">Asistida</option>
+                                    <option value="No asistida">No asistida</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-actions space-between">
+                            <button type="button" class="btn btn-outline" id="btn-cancel-pt2">Cancelar</button>
+                            <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Aceptar y Guardar</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Module 2: Clientes -->
+            <section id="module-clients" class="module hidden">
+                <div class="glass-card">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="search-clients" placeholder="Buscar por nombre o documento...">
+                        </div>
+                        <span class="total-records">Total: <span id="total-clients">0</span></span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-clients">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>Nombres</th>
+                                    <th>Apellidos</th>
+                                    <th>Celular</th>
+                                    <th>Correo</th>
+                                    <th>Contacto Inicial</th>
+                                    <th>Fecha Registro</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 3: Gestión de Citas -->
+            <section id="module-appointments" class="module hidden">
+                <div class="glass-card">
+                    <div id="calendar"></div>
+                </div>
+            </section>
+
+            <!-- Module 4: Gestión Comercial -->
+            <section id="module-commercial" class="module hidden">
+                <div class="glass-card">
+                    <div class="table-toolbar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-search"></i>
+                            <input type="text" id="search-commercial" placeholder="Buscar citas atendidas...">
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="table-commercial">
+                            <thead>
+                                <tr>
+                                    <th>Documento</th>
+                                    <th>Nombres</th>
+                                    <th>Apellidos</th>
+                                    <th>Celular</th>
+                                    <th>Fecha Cita</th>
+                                    <th>Tipo Cita</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Module 5: Dashboard -->
+            <section id="module-dashboard" class="module hidden">
+                <div class="dashboard-filters glass-card mb-20">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Fecha Inicial</label>
+                            <input type="date" id="dash_fecha_ini">
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha Final</label>
+                            <input type="date" id="dash_fecha_fin">
+                        </div>
+                        <div class="form-group">
+                            <label>Tipo de Cita</label>
+                            <select id="dash_tipo_cita">
+                                <option value="Todas">Todas</option>
+                                <!-- JS Populated -->
+                            </select>
+                        </div>
+                        <div class="form-group" style="display:flex; align-items:flex-end;">
+                            <button id="btn-filter-dash" class="btn btn-primary full-width">Filtrar</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- KPIs -->
+                <div class="kpi-grid mb-20">
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon"><i class="fa-solid fa-users"></i></div>
+                        <div class="kpi-info">
+                            <h3>Total Clientes</h3>
+                            <span id="kpi-total-clients">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card">
+                        <div class="kpi-icon"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div class="kpi-info">
+                            <h3>Citas Asistidas</h3>
+                            <span id="kpi-asistidas">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card warning">
+                        <div class="kpi-icon"><i class="fa-solid fa-user-xmark"></i></div>
+                        <div class="kpi-info">
+                            <h3>Clientes Perdidos</h3>
+                            <span id="kpi-perdidos">0</span>
+                        </div>
+                    </div>
+                    <div class="kpi-card glass-card success">
+                        <div class="kpi-icon"><i class="fa-solid fa-handshake-angle"></i></div>
+                        <div class="kpi-info">
+                            <h3>Referidos</h3>
+                            <span id="kpi-referidos">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <div class="chart-container glass-card">
+                        <h3>Frecuencia de Agendamiento</h3>
+                        <canvas id="chart-frecuencia"></canvas>
+                    </div>
+                    <div class="chart-container glass-card">
+                        <h3>Fidelización de Clientes</h3>
+                        <canvas id="chart-fidelizacion"></canvas>
+                    </div>
+                    <div class="chart-container glass-card full-width">
+                        <h3>Sociodemográfico (Edades)</h3>
+                        <canvas id="chart-edades"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    <!-- Modal Alerta/Resumen Paciente Existente/Nuevo -->
+    <div id="modal-alert" class="modal-overlay hidden">
+        <div class="glass-card modal-content">
+            <div class="modal-header">
+                <h3 id="modal-alert-title">Aviso</h3>
+            </div>
+            <div class="modal-body" id="modal-alert-body">
+                <!-- Content -->
+            </div>
+            <div class="modal-footer" id="modal-alert-footer">
+                <!-- Buttons -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Solución Visual (Gestión Comercial) -->
+    <div id="modal-solucion" class="modal-overlay hidden">
+        <div class="glass-card modal-content modal-large">
+            <div class="modal-header">
+                <h3>Solución Visual Adquirida</h3>
+                <button class="close-modal"><i class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="solucion-form">
+                    <input type="hidden" id="solucion_cita_id">
+                    <div class="form-group mb-20">
+                        <label>¿El cliente adquirió solución visual incluidos medicamentos? *</label>
+                        <select id="s_adquirio" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Si">Sí</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    
+                    <div id="soluciones-container" class="hidden">
+                        <div class="form-group">
+                            <label>Cantidad de Soluciones (Máx 5)</label>
+                            <input type="number" id="s_cantidad" min="1" max="5" value="1">
+                        </div>
+                        <div id="items-solucion">
+                            <!-- Populated by JS dynamically based on s_cantidad -->
+                        </div>
+                        
+                        <div class="form-grid mt-20">
+                            <div class="form-group">
+                                <label>Laboratorio (Múltiple) *</label>
+                                <select id="s_laboratorio" multiple required class="multiple-select">
+                                    <!-- Populated by JS -->
+                                </select>
+                                <small>Mantenga presionado Ctrl/Cmd para seleccionar varios</small>
+                            </div>
+                            <div class="form-group">
+                                <label>¿Requiere control? *</label>
+                                <select id="s_req_control" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Si">Sí</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            <div class="form-group hidden" id="s_control_cual_container">
+                                <label>¿Qué solución requiere control? *</label>
+                                <input type="text" id="s_control_cual">
+                            </div>
+                            <div class="form-group">
+                                <label>Periodicidad del control *</label>
+                                <select id="s_periodicidad" multiple required class="multiple-select">
+                                    <!-- Populated by JS -->
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Asesor de Venta *</label>
+                                <select id="s_asesor" required>
+                                    <option value="">Seleccione...</option>
+                                    <option value="Jose Daniel">Jose Daniel</option>
+                                    <option value="Daniela">Daniela</option>
+                                    <option value="Dora">Dora</option>
+                                    <option value="Jenny">Jenny</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Fecha de Entrega *</label>
+                                <input type="date" id="s_fecha_entrega" required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions right">
+                        <button type="submit" class="btn btn-primary">Guardar Registro Comercial</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <script src="app.js"></script>
+</body>
+</html>
